@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuentra tu Vino Ideal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3 {
+            color: #8b0000;
+            text-align: center;
+        }
+        .question {
+            margin: 20px 0;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #8b0000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #a00000;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Encuentra tu vino ideal 🍷</h1>
+        <div id="quiz">
+            <!-- Preguntas dinámicas se generarán aquí -->
+        </div>
+        <div id="result" style="display:none;">
+            <h2>Vinos sugeridos para usted:</h2>
+            <p id="wineResult"></p>
+        </div>
+    </div>
+    <script>
+        // Lista completa de vinos
+        const wines = [
+            { name: "Garmona la cuvee brut 2016", price: 50, category: "Aperitivo", dryness: "Seco", acidity: "Sí", flavor: "Fresco", page: 1 },
+            { name: "Laurent perrier brut L.P", price: 90, category: "Aperitivo", dryness: "Seco", acidity: "Sí", flavor: "Afrutado", page: 2 },
+            { name: "Juvé and camps gran reserva de la familia", price: 70, category: "Aperitivo", dryness: "Seco", acidity: "Sí", flavor: "Especiado", page: 3 },
+            { name: "Agustí Torelló Mata kripta", price: 100, category: "Aperitivo", dryness: "Seco", acidity: "Sí", flavor: "Afrutado", page: 4 },
+            { name: "Barbadillo castillo de san diego 2023", price: 15, category: "Blanco", dryness: "Seco", acidity: "No", flavor: "Fresco", page: 5 },
+            { name: "Marques de riscal verdejo 2023", price: 20, category: "Blanco", dryness: "Seco", acidity: "No", flavor: "Afrutado", page: 6 },
+            { name: "Terras gauda o rossal 2023", price: 25, category: "Blanco", dryness: "Seco", acidity: "Sí", flavor: "Fresco", page: 7 },
+            { name: "Viña tondonia blanco reserva 2011", price: 60, category: "Blanco", dryness: "Seco", acidity: "Sí", flavor: "Especiado", page: 8 },
+            { name: "Paco y lola albariño 2023", price: 25, category: "Blanco", dryness: "Seco", acidity: "Sí", flavor: "Afrutado", page: 9 },
+            { name: "Flor de muga rosado 2023", price: 40, category: "Rosado", dryness: "Seco", acidity: "Sí", flavor: "Afrutado", page: 25 },
+            { name: "Marques de caceres rosado 2023", price: 20, category: "Rosado", dryness: "Seco", acidity: "No", flavor: "Fresco", page: 26 },
+            { name: "Lalomba rosado 2023", price: 50, category: "Rosado", dryness: "Seco", acidity: "Sí", flavor: "Especiado", page: 27 },
+            { name: "El coto rosado", price: 15, category: "Rosado", dryness: "Seco", acidity: "No", flavor: "Afrutado", page: 28 },
+            { name: "Viña tondonia rosado gran reserva 2011", price: 85, category: "Rosado", dryness: "Seco", acidity: "Sí", flavor: "Fresco", page: 29 },
+            { name: "Palo cortado península", price: 90, category: "Postre", dryness: "Dulce", acidity: "Sí", flavor: "Especiado", page: 30 },
+            { name: "Fino la ina", price: 50, category: "Postre", dryness: "Seco", acidity: "No", flavor: "Afrutado", page: 31 },
+            { name: "Mar de frades albariño atlantico 2023", price: 30, category: "Blanco", dryness: "Seco", acidity: "Sí", flavor: "Fresco", page: 32 },
+            { name: "Viña esmeralda 2023", price: 20, category: "Blanco", dryness: "Dulce", acidity: "No", flavor: "Afrutado", page: 33 }
+        ];
+
+        const questions = [
+            { text: "¿Qué categoría buscas?", key: "category", options: ["Aperitivo", "Blanco", "Rosado", "Tinto", "Postre"] },
+            { text: "¿Prefieres un vino seco o dulce?", key: "dryness", options: ["Seco", "Dulce"] },
+            { text: "¿Es importante que sea ácido?", key: "acidity", options: ["Sí", "No"] },
+            { text: "¿Qué sabor prefieres?", key: "flavor", options: ["Fresco", "Afrutado", "Especiado"] }
+        ];
+
+        function renderQuiz() {
+            const quizDiv = document.getElementById("quiz");
+            quizDiv.innerHTML = "";
+            questions.forEach(question => {
+                const questionDiv = document.createElement("div");
+                questionDiv.classList.add("question");
+                questionDiv.innerHTML = `<h3>${question.text}</h3>`;
+                const optionsGroup = document.createElement("div");
+                optionsGroup.classList.add("checkbox-group");
+                question.options.forEach(option => {
+                    optionsGroup.innerHTML += `<label><input type="checkbox" name="${question.key}" value="${option}"> ${option}</label>`;
+                });
+                questionDiv.appendChild(optionsGroup);
+                quizDiv.appendChild(questionDiv);
+            });
+            quizDiv.innerHTML += `<button id="submit">Ver mi recomendación</button>`;
+            document.getElementById("submit").addEventListener("click", handleSubmit);
+        }
+
+        function handleSubmit() {
+            let filteredWines = [...wines];
+            questions.forEach(question => {
+                const selectedOptions = Array.from(document.querySelectorAll(`input[name="${question.key}"]:checked`)).map(input => input.value);
+                if (selectedOptions.length > 0) {
+                    filteredWines = filteredWines.filter(wine => selectedOptions.includes(wine[question.key]));
+                }
+            });
+
+            displayResult(filteredWines);
+        }
+
+        function displayResult(filteredWines) {
+            const resultDiv = document.getElementById("result");
+            const wineResult = document.getElementById("wineResult");
+            if (filteredWines.length > 0) {
+                const wineList = filteredWines.map(wine => `${wine.name} (página ${wine.page})`).join("<br>");
+                wineResult.innerHTML = `Hemos encontrado los siguientes vinos para usted:<br><br>${wineList}`;
+            } else {
+                const randomWine = wines[Math.floor(Math.random() * wines.length)];
+                wineResult.innerHTML = `No encontramos coincidencias exactas, pero le recomendamos:<br><br>${randomWine.name} (página ${randomWine.page})`;
+            }
+            document.getElementById("quiz").style.display = "none";
+            resultDiv.style.display = "block";
+        }
+
+        renderQuiz();
+    </script>
+</body>
+</html>
